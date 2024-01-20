@@ -20,9 +20,9 @@ discharge_params <- param_id %>%
 
 # get air temp, flow, prcip incremental and accumulated precipitation and any discharge for any sites that have water temper
 realtime_watertemp <- function(id_station = NULL,
-                     param_primary = c(5),
-                     param_secondary = c(1, 46, 18, 19, discharge_params),
-                     days_back = 5400){
+                               param_primary = c(5),
+                               param_secondary = c(1, 46, 18, 19, discharge_params),
+                               days_back = 581){
   tryCatch(
     {
       primary_data <- tidyhydat::realtime_ws(
@@ -31,7 +31,7 @@ realtime_watertemp <- function(id_station = NULL,
         start_date = Sys.Date() - days_back,
         end_date = Sys.Date()
       )
-
+      
       if (!is.null(primary_data)) {
         secondary_data <- tryCatch(
           {
@@ -48,7 +48,7 @@ realtime_watertemp <- function(id_station = NULL,
           }
         )
       }
-
+      
       list(primary_data = primary_data, secondary_data = secondary_data)
     },
     error = function(e) {
@@ -60,21 +60,30 @@ realtime_watertemp <- function(id_station = NULL,
 
 # get data for all stations
 dat_raw <- stations %>%
-  purrr::map(realtime_watertemp, days_back = 10)
+  purrr::map(realtime_watertemp)
 
+# remove the empty results
+dat_ls <- dat_raw %>%
+  discard(is.null)
 
+# put it all into one dataframe for now
 dat <- dat_raw %>%
   discard(is.null) %>%
   purrr::map(bind_rows) %>%
   bind_rows()
 
 
-# create a new  sqlite database  and write dat to it
-# DBI::dbConnect(RSQLite::SQLite(), paste0(dir, "/data/realtime_data.sqlite"))
-# conn <- rws_connect(paste0(dir, "/data/realtime_data.sqlite"))
-# rws_write(dat, exists = F, delete = F,
-#           conn = conn, x_name = "realtime_data")
-# rws_disconnect(conn)
+# get the directory where the data is stored if diff from header.R
+# dir <- '~/Dropbox/New Graph/fish-passage-22'
+
+#create a new  sqlite database  and write dat to it
+DBI::dbConnect(RSQLite::SQLite(), paste0(dir, "/Data/temp_realtime.sqlite"))
+conn <- rws_connect(paste0(dir, "/Data/temp_realtime.sqlite"))
+rws_list_tables(conn)
+# settings below are for future additions 
+rws_write(dat, exists = F, delete = F,
+          conn = conn, x_name = "temp_realtime")
+rws_disconnect(conn)
 
 
 
