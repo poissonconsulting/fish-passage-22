@@ -74,10 +74,10 @@ dat <- dat_raw %>%
 
 
 # get the directory where the data is stored if diff from header.R
-# dir <- '~/Dropbox/New Graph/fish-passage-22'
+dir <- '~/Dropbox/New Graph/fish-passage-22'
 
 #create a new  sqlite database  and write dat to it
-DBI::dbConnect(RSQLite::SQLite(), paste0(dir, "/Data/temp_realtime.sqlite"))
+# DBI::dbConnect(RSQLite::SQLite(), paste0(dir, "/Data/temp_realtime.sqlite"))
 conn <- rws_connect(paste0(dir, "/Data/temp_realtime.sqlite"))
 rws_list_tables(conn)
 # settings below are for future additions 
@@ -86,7 +86,11 @@ rws_write(dat, exists = F, delete = F,
 rws_disconnect(conn)
 
 
-
-
-
+# this info was useful for the dat request so will leave here
+# rt <- rws_read_table("temp_realtime", conn = conn)
+# rt_head <- head(rt)
+# cat(unique(rt$STATION_NUMBER))
+# length((unique(rt$STATION_NUMBER)))
+# min(rt$Date)
+# max(rt$Date)
 
