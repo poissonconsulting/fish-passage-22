@@ -23,7 +23,7 @@ sort <- c(
   "gsdd-annual-site", "gsdd-map"
 )
 
-drop <- c("baseline", "temperature-mechanistic", "temperature-air2stream")
+drop <- c("baseline")
 ```
 
 ```{r}
