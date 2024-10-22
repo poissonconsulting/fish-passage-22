@@ -32,14 +32,13 @@ source("functions.R")
 
 if (dir.exists("~/Poisson")) {
   # Poisson directory
-  dir <- "~/Poisson/Clients - Transfer/New Graph/fish-passage-22b"
+  dir <- "~/Poisson/Data/fish-passage/2022"
 } else {
   # New Graph directory
-  dir <- "~/Dropbox/New Graph/fish-passage-22b"
+  dir <- "~/Dropbox/New Graph/fish-passage-22"
 }
 
 crs <- 3005 # BC Albers
-options("fwa.epsg" = 3005)
 
 bounding_dates <- dtt_date(c("2019-01-01", "2021-12-31"))
 

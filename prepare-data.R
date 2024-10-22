@@ -47,41 +47,6 @@ water_temp %<>%
   ) %>% 
   arrange(site, week)
 
-# Calculate vapour pressure
-# constants:
-ea_w <- 6.1121
-eb_w <- 18.729
-ec_w <- 257.87
-ed_w <- 227.3
-fa_w <- 1.00072
-fb_w <- 3.2e-6
-fc_w <- 5.9e-10
-
-vapour_pressure <- 
-  full_join(
-    air_temp,
-    dewpoint_temp,
-    join_by(cell_id, site, date, time)
-  ) %>% 
-  full_join(
-    surface_pressure,
-    join_by(cell_id, site, date, time)
-  ) %>% 
-  mutate(
-    surface_pressure = surface_pressure / 100, # in hectopascals for lw rad. eqn
-    vapour_pressure = ea_w * exp((eb_w - (dewpoint_temp / ed_w)) * (dewpoint_temp / (dewpoint_temp + ec_w))) *
-      (surface_pressure * (fc_w * dewpoint_temp^2 + fb_w) + fa_w)
-  ) %>% 
-  # Aggregate by week
-  full_join(dates_sites_all, join_by(site, date)) %>% 
-  group_by(site, week) %>% 
-  summarize(
-    vapour_pressure = mean(vapour_pressure),
-    .groups = "drop"
-  ) %>% 
-  select(site, week, vapour_pressure) %>% 
-  arrange(site, week)
-
 # Aggregate air temp data by week
 air_temp %<>%
   full_join(dates_sites_all, join_by(site, date)) %>%
@@ -92,26 +57,20 @@ air_temp %<>%
   ) %>% 
   arrange(site, week)
 
-# Aggregate solar radiation data by week
-# Get average daily solar rad (sum over each day then take mean)
-solar_rad %<>%
-  group_by(site, date) %>% 
-  summarize(
-    solar_rad = sum(solar_rad),
-    .groups = "drop"
-  ) %>% 
-  full_join(dates_sites_all, join_by(site, date)) %>%
-  group_by(site, week) %>% 
-  summarize(
-    solar_rad = mean(solar_rad),
-    .groups = "drop"
-  ) %>% 
-  arrange(site, week)
-
 # Aggregate discharge data by week, match to water temp sites
+closest_sites <- 
+  water_temp_site %>% 
+  st_join(
+    discharge_site,
+    join = st_nearest_feature
+  ) %>% 
+  tibble() %>% 
+  select(site, discharge_site)
+
 discharge %<>% 
+  right_join(closest_sites, join_by(discharge_site), relationship = "many-to-many") %>% 
   left_join(dates_sites_all, join_by(date, site)) %>%
-  group_by(site, week) %>% 
+  group_by(discharge_site, week, site) %>% 
   summarize(
     discharge = mean(discharge),
     .groups = "drop"
@@ -125,14 +84,11 @@ elev <-
 
 # Add missing values for water temp by expanding to every site-week combo
 water_temp %<>% 
-  left_join(vapour_pressure, join_by(site, week)) %>% 
   left_join(air_temp, join_by(site, week)) %>% 
-  left_join(solar_rad, join_by(site, week)) %>% 
   left_join(discharge, join_by(site, week)) %>% 
   left_join(elev, join_by(site)) %>% 
   left_join(first_date_week, join_by(week)) %>% 
   mutate(
-    longwave_rad = (0.61 + 0.05 * sqrt(vapour_pressure)) * 5.670373e-8 * (air_temp + 273.16)^4 * 24 * 60 * 60 ,
     site_remains = if_else2(site %in% dist_sites, TRUE, FALSE)
   ) %>% 
   filter(site_remains) %>% 

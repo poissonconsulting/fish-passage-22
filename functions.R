@@ -129,10 +129,10 @@ pcic_dl_sh <- function(
   # define the location of the data directory to download to
   dir_data = "~/Dropbox/New Graph/fish-passage-22/Data/Discharge/pcic",
   # Define the bounding box of the area of interest
-  lat_min = 52.5,
-  lat_max = 56.5,
-  lon_min = -128,
-  lon_max = -122.5,
+  lat_min = 53.32,
+  lat_max = 54.89,
+  lon_min = -127.53,
+  lon_max = -122.92,
   # define the date range of interest
   date_start = bounding_dates[1],
   date_end = bounding_dates[2],

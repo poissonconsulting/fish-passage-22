@@ -12,7 +12,7 @@ sbf_set_sub("read", "air-temp")
 dir2 <- file.path(getwd(), "output/data/air-temp")
 if (!file.exists(file.path(dir2, "2019.nc"))) {
   # Change to directory to dropbox folder if API doesn't work
-  dir2 <- file.path(dir, "Data/ERA5/air-temp")
+  dir2 <- file.path(dir, "Data/ERA5")
 }
 
 files <- list.files(dir2, full.names = TRUE) %>% 
